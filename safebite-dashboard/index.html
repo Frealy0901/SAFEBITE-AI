@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SAFEBITE Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>SAFEBITE AI - Food Safety Dashboard</header>
+
+<main>
+    <!-- Risk Summary Cards -->
+    <div class="summary-cards">
+        <div class="card summary" id="lowCard">
+            <h3>Low Risk</h3>
+            <p id="lowCount">0</p>
+        </div>
+        <div class="card summary" id="mediumCard">
+            <h3>Medium Risk</h3>
+            <p id="mediumCount">0</p>
+        </div>
+        <div class="card summary" id="highCard">
+            <h3>High Risk</h3>
+            <p id="highCount">0</p>
+        </div>
+    </div>
+
+    <!-- High Risk Products Table -->
+    <div class="card">
+        <h2>High Risk Products</h2>
+        <p id="overrideAlert">Loading...</p>
+        <table id="highRiskTable">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Final Score</th>
+                    <th>Risk Level</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Risk Distribution Pie Chart -->
+    <div class="card">
+        <h2>Risk Distribution</h2>
+        <div id="chartContainer">
+            <canvas id="riskChart"></canvas>
+        </div>
+    </div>
+</main>
+
+<script>
+window.onload = function () {
+    // Fetch Risk Distribution
+    fetch("get_distribution.php")
+        .then(res => res.json())
+        .then(data => {
+            let labels = [];
+            let values = [];
+            let low=0, medium=0, high=0;
+
+            data.forEach(item => {
+                labels.push(item.risk_level);
+                values.push(item.total);
+
+                // update summary counts
+                if(item.risk_level.toLowerCase() === 'low') low = item.total;
+                if(item.risk_level.toLowerCase() === 'medium') medium = item.total;
+                if(item.risk_level.toLowerCase() === 'high') high = item.total;
+            });
+
+            // Update summary cards
+            document.getElementById('lowCount').innerText = low;
+            document.getElementById('mediumCount').innerText = medium;
+            document.getElementById('highCount').innerText = high;
+
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['#4CAF50','#FFC107','#F44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: {
+                            display: true,
+                            text: 'Distribution of Risk Levels',
+                            font: { size: 18 }
+                        }
+                    }
+                }
+            });
+        });
+
+    // Fetch High Risk Products
+    fetch("get_highrisk.php")
+        .then(res => res.json())
+        .then(data => {
+            const table = document.getElementById("highRiskTable").getElementsByTagName('tbody')[0];
+            let overrideCount = 0;
+            table.innerHTML = "";
+
+            data.forEach(item => {
+                const row = table.insertRow();
+                row.insertCell(0).innerText = item.product_name;
+                row.insertCell(1).innerText = item.final_score;
+                const statusCell = row.insertCell(2);
+                statusCell.innerText = item.risk_level;
+                statusCell.classList.add("alert");
+
+                if(item.override_triggered == 1){
+                    overrideCount++;
+                }
+            });
+
+            document.getElementById("overrideAlert").innerText =
+                overrideCount + " products triggered safety override due to banned additives.";
+        });
+};
+</script>
+
+</body>
+</html>
