@@ -1,0 +1,316 @@
+Imports System.IO
+
+Public Class Form1
+
+    Dim itemFile As String = "item.txt"
+    Dim ruleFile As String = "rule.txt"
+    Dim imagesFolder As String = "images"
+
+    Dim rnd As New Random()
+
+    Dim pilihanUser As String = ""
+    Dim pilihanKomputer As String = ""
+
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        LoadItem()
+        LoadRule()
+
+    End Sub
+
+
+    ' LOAD ITEM KE PANEL
+    Sub LoadItem()
+
+        Panel1.Controls.Clear()
+
+        If File.Exists(itemFile) Then
+
+            Dim lines() As String = File.ReadAllLines(itemFile)
+
+            Dim x As Integer = 10
+
+            For Each row In lines
+
+                Dim parts() As String = row.Split(","c)
+
+                Dim nama As String = parts(1)
+                Dim gambar As String = parts(2)
+
+                Dim pb As New PictureBox
+
+                pb.Width = 80
+                pb.Height = 80
+
+                pb.SizeMode = PictureBoxSizeMode.StretchImage
+
+                pb.Location = New Point(x, 10)
+
+                pb.Tag = nama
+
+                Dim imgPath As String =
+                    Path.Combine(imagesFolder, gambar)
+
+                If File.Exists(imgPath) Then
+                    pb.Image = Image.FromFile(imgPath)
+                End If
+
+                AddHandler pb.Click, AddressOf Item_Click
+
+                Panel1.Controls.Add(pb)
+
+                x += 90
+
+            Next
+
+        End If
+
+    End Sub
+
+
+    ' LOAD RULE KE PANEL
+    Sub LoadRule()
+
+        Panel2.Controls.Clear()
+
+        If File.Exists(ruleFile) Then
+
+            Dim lines() As String = File.ReadAllLines(ruleFile)
+
+            Dim y As Integer = 10
+
+            For Each row In lines
+
+                Dim lbl As New Label
+
+                lbl.Text = row
+
+                lbl.Location = New Point(10, y)
+
+                Panel2.Controls.Add(lbl)
+
+                y += 25
+
+            Next
+
+        End If
+
+    End Sub
+
+
+    ' USER PILIH ITEM
+    Private Sub Item_Click(sender As Object, e As EventArgs)
+
+        Dim pb As PictureBox = sender
+
+        pilihanUser = pb.Tag.ToString()
+
+        PictureBox1.Image = pb.Image
+
+        RandomKomputer()
+
+    End Sub
+
+
+    ' RANDOM LAWAN
+    Sub RandomKomputer()
+
+        Dim lines() As String = File.ReadAllLines(itemFile)
+
+        Dim i As Integer = rnd.Next(0, lines.Length)
+
+        Dim parts() As String = lines(i).Split(","c)
+
+        pilihanKomputer = parts(1)
+
+        Dim gambar As String = parts(2)
+
+        Dim imgPath As String =
+            Path.Combine(imagesFolder, gambar)
+
+        If File.Exists(imgPath) Then
+
+            PictureBox2.Image =
+                Image.FromFile(imgPath)
+
+        End If
+
+        Timer1.Start()
+
+    End Sub
+
+
+    ' TIMER
+    Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
+
+        Timer1.Stop()
+
+        TentukanPemenang()
+
+    End Sub
+
+
+    ' MENENTUKAN PEMENANG
+    Sub TentukanPemenang()
+
+        Dim hasil As String = "Seri"
+
+        Dim lines() As String =
+            File.ReadAllLines(ruleFile)
+
+        For Each row In lines
+
+            Dim parts() As String =
+                row.Split(","c)
+
+            Dim p1 As String = parts(0)
+            Dim p2 As String = parts(1)
+
+            If pilihanUser = p1 And pilihanKomputer = p2 Then
+                hasil = "Menang"
+
+            ElseIf pilihanUser = p2 And pilihanKomputer = p1 Then
+                hasil = "Kalah"
+
+            End If
+
+        Next
+
+        MessageBox.Show(hasil)
+
+    End Sub
+
+End Class
+Imports System.IO
+
+Public Class Form2
+
+    Dim ruleFile As String = "rule.txt"
+
+    Private Sub Form2_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        LoadRule()
+
+    End Sub
+
+
+    Sub LoadRule()
+
+        Panel1.Controls.Clear()
+
+        If File.Exists(ruleFile) Then
+
+            Dim lines() As String =
+                File.ReadAllLines(ruleFile)
+
+            Dim y As Integer = 10
+
+            For Each row In lines
+
+                Dim lbl As New Label
+
+                lbl.Text = row
+
+                lbl.Location =
+                    New Point(10, y)
+
+                Panel1.Controls.Add(lbl)
+
+                y += 25
+
+            Next
+
+        End If
+
+    End Sub
+
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+        Form3.Show()
+
+    End Sub
+
+End Class
+
+Imports System.IO
+
+Public Class Form3
+
+    Dim ruleFile As String = "rule.txt"
+
+    Dim gambar1 As String = ""
+    Dim gambar2 As String = ""
+
+    ' BROWSE GAMBAR 1
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+        Using dlg As New OpenFileDialog
+
+            dlg.Filter = "Image|*.png;*.jpg"
+
+            If dlg.ShowDialog = DialogResult.OK Then
+
+                gambar1 = dlg.FileName
+
+                PictureBox1.Image =
+                    Image.FromFile(gambar1)
+
+            End If
+
+        End Using
+
+    End Sub
+
+
+    ' BROWSE GAMBAR 2
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+
+        Using dlg As New OpenFileDialog
+
+            dlg.Filter = "Image|*.png;*.jpg"
+
+            If dlg.ShowDialog = DialogResult.OK Then
+
+                gambar2 = dlg.FileName
+
+                PictureBox2.Image =
+                    Image.FromFile(gambar2)
+
+            End If
+
+        End Using
+
+    End Sub
+
+
+    ' SIMPAN RULE
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+
+        If ComboBox1.Text = "" Or ComboBox2.Text = "" Then
+
+            MessageBox.Show("Isi item dulu")
+            Exit Sub
+
+        End If
+
+        Dim rule As String =
+            ComboBox1.Text &
+            "," &
+            ComboBox2.Text
+
+        File.AppendAllText(
+            ruleFile,
+            Environment.NewLine & rule
+        )
+
+        MessageBox.Show("Rule ditambahkan")
+
+        Me.Close()
+
+    End Sub
+
+End Class
+
+
+
