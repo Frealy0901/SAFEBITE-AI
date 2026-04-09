@@ -311,6 +311,111 @@ Public Class Form3
     End Sub
 
 End Class
+Imports System.IO
+
+Public Class Form2
+
+    Dim ruleFile As String = "rule.txt"
+    Dim itemFile As String = "item.txt"
+    Dim imagesFolder As String = "images"
+
+    Private Sub Form2_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        LoadRule()
+
+    End Sub
+
+
+    Sub LoadRule()
+
+        Panel1.Controls.Clear()
+
+        If File.Exists(ruleFile) Then
+
+            Dim lines() As String = File.ReadAllLines(ruleFile)
+
+            Dim y As Integer = 10
+
+            For Each row In lines
+
+                Dim parts() As String = row.Split(","c)
+
+                Dim item1 As String = parts(0)
+                Dim item2 As String = parts(1)
+
+                ' PANEL RULE
+                Dim pnl As New Panel
+
+                pnl.Width = 350
+                pnl.Height = 80
+
+                pnl.Location = New Point(10, y)
+
+                ' PIC ITEM 1
+                Dim pb1 As New PictureBox
+
+                pb1.Width = 60
+                pb1.Height = 60
+
+                pb1.Location = New Point(10, 10)
+
+                pb1.SizeMode = PictureBoxSizeMode.StretchImage
+
+                pb1.Image = LoadImage(item1)
+
+                ' LABEL >
+                Dim lbl As New Label
+
+                lbl.Text = ">"
+
+                lbl.Font = New Font("Arial", 16)
+
+                lbl.Location = New Point(80, 25)
+
+                ' PIC ITEM 2
+                Dim pb2 As New PictureBox
+
+                pb2.Width = 60
+                pb2.Height = 60
+
+                pb2.Location = New Point(110, 10)
+
+                pb2.SizeMode = PictureBoxSizeMode.StretchImage
+
+                pb2.Image = LoadImage(item2)
+
+                ' PIC HAPUS
+                Dim pbHapus As New PictureBox
+
+                pbHapus.Width = 40
+                pbHapus.Height = 40
+
+                pbHapus.Location = New Point(200, 20)
+
+                pbHapus.SizeMode = PictureBoxSizeMode.StretchImage
+
+                pbHapus.Image = Image.FromFile("delete.png")
+
+                pbHapus.Tag = row
+
+                AddHandler pbHapus.Click, AddressOf HapusRule
+
+                pnl.Controls.Add(pb1)
+                pnl.Controls.Add(lbl)
+                pnl.Controls.Add(pb2)
+                pnl.Controls.Add(pbHapus)
+
+                Panel1.Controls.Add(pnl)
+
+                y += 90
+
+            Next
+
+        End If
+
+    End Sub
+
+
 
 
 
